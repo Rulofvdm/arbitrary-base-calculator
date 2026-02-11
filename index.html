@@ -52,7 +52,45 @@
     .subtitle {
       color: var(--muted);
       font-size: 0.9rem;
-      margin-bottom: 1.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
     }
 
     .form-group {
@@ -206,6 +244,12 @@
     <h1>Base Calculator</h1>
     <p class="subtitle">Add, subtract, multiply, or divide two numbers in any base (2–36).</p>
 
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="calc">Calculator</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="convert">Base Converter</button>
+    </div>
+
+    <div id="panel-calc" class="panel active" role="tabpanel">
     <form id="form" autocomplete="off">
       <div class="form-group">
         <label for="base">Base</label>
@@ -237,12 +281,54 @@
       <h2>Result</h2>
       <div id="result-content"></div>
     </div>
+    </div>
+
+    <div id="panel-convert" class="panel" role="tabpanel">
+      <form id="form-convert" autocomplete="off">
+        <div class="row">
+          <div class="form-group">
+            <label for="fromBase">From base</label>
+            <input type="number" id="fromBase" name="fromBase" min="2" max="36" value="10" placeholder="e.g. 10" required>
+          </div>
+          <div class="form-group">
+            <label for="toBase">To base</label>
+            <input type="number" id="toBase" name="toBase" min="2" max="36" value="16" placeholder="e.g. 16" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="convertNum">Number</label>
+          <input type="text" id="convertNum" name="convertNum" placeholder="e.g. 255" required>
+        </div>
+        <button type="submit">Convert</button>
+      </form>
+      <div id="result-convert" class="result" role="status" aria-live="polite">
+        <h2>Result</h2>
+        <div id="result-convert-content"></div>
+      </div>
+    </div>
   </main>
 
   <script>
     const form = document.getElementById('form');
     const resultEl = document.getElementById('result');
     const resultContent = document.getElementById('result-content');
+    const formConvert = document.getElementById('form-convert');
+    const resultConvertEl = document.getElementById('result-convert');
+    const resultConvertContent = document.getElementById('result-convert-content');
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var id = this.getAttribute('data-tab');
+        document.querySelectorAll('.tab').forEach(function (t) {
+          t.classList.toggle('active', t === tab);
+          t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+        });
+        document.querySelectorAll('.panel').forEach(function (p) {
+          p.classList.toggle('active', p.id === 'panel-' + id);
+        });
+      });
+    });
 
     function toBase(n, base) {
       if (n === 0) return '0';
@@ -334,6 +420,46 @@
         html = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(formatInBase(result, base)) + '</span></div>';
       }
       showResult(html);
+    });
+
+    // Base converter
+    function showConvertError(message) {
+      resultConvertEl.classList.add('visible', 'error');
+      resultConvertContent.innerHTML = '<p class="error-msg">' + escapeHtml(message) + '</p>';
+    }
+
+    function showConvertResult(valueStr, toBase) {
+      resultConvertEl.classList.remove('error');
+      resultConvertEl.classList.add('visible');
+      resultConvertContent.innerHTML = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(valueStr) + '</span></div>';
+    }
+
+    formConvert.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fromBase = parseInt(formConvert.fromBase.value, 10);
+      var toBase = parseInt(formConvert.toBase.value, 10);
+      var numStr = formConvert.convertNum.value.trim();
+
+      if (isNaN(fromBase) || fromBase < 2 || fromBase > 36) {
+        showConvertError('From base must be between 2 and 36.');
+        return;
+      }
+      if (isNaN(toBase) || toBase < 2 || toBase > 36) {
+        showConvertError('To base must be between 2 and 36.');
+        return;
+      }
+
+      var negative = numStr.charAt(0) === '-';
+      if (negative) numStr = numStr.slice(1).trim();
+      var num = parseInBase(numStr, fromBase);
+      if (num === null) {
+        showConvertError('Invalid number for base ' + fromBase + '.');
+        return;
+      }
+      if (negative) num = -num;
+
+      var resultStr = formatInBase(num, toBase);
+      showConvertResult(resultStr, toBase);
     });
   </script>
 </body>
