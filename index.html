@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Base Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --muted: #888;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --error: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    main {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    input::placeholder {
+      color: var(--muted);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .ops {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+    }
+
+    .op {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-transform: none;
+      margin-bottom: 0;
+    }
+
+    .op input {
+      width: auto;
+      margin: 0;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    .result {
+      margin-top: 1.75rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: none;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .result.error {
+      border-color: var(--error);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .result h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 0.75rem;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .result-value {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--success);
+    }
+
+    .result-value.decimal {
+      color: var(--accent);
+    }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Base Calculator</h1>
+    <p class="subtitle">Add, subtract, multiply, or divide two numbers in any base (2–36).</p>
+
+    <form id="form" autocomplete="off">
+      <div class="form-group">
+        <label for="base">Base</label>
+        <input type="number" id="base" name="base" min="2" max="36" value="10" placeholder="e.g. 10" required>
+      </div>
+      <div class="form-group">
+        <label>Operation</label>
+        <div class="ops">
+          <label class="op"><input type="radio" name="op" value="+" checked> Plus</label>
+          <label class="op"><input type="radio" name="op" value="-"> Minus</label>
+          <label class="op"><input type="radio" name="op" value="*"> Multiply</label>
+          <label class="op"><input type="radio" name="op" value="/"> Divide</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label for="num1">Number 1</label>
+          <input type="text" id="num1" name="num1" placeholder="e.g. 17" required>
+        </div>
+        <div class="form-group">
+          <label for="num2">Number 2</label>
+          <input type="text" id="num2" name="num2" placeholder="e.g. 5" required>
+        </div>
+      </div>
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div id="result" class="result" role="status" aria-live="polite">
+      <h2>Result</h2>
+      <div id="result-content"></div>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('form');
+    const resultEl = document.getElementById('result');
+    const resultContent = document.getElementById('result-content');
+
+    function toBase(n, base) {
+      if (n === 0) return '0';
+      const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const result = [];
+      while (n > 0) {
+        result.push(digits[n % base]);
+        n = Math.floor(n / base);
+      }
+      return result.reverse().join('');
+    }
+
+    function parseInBase(str, base) {
+      const trimmed = String(str).trim().toUpperCase();
+      if (!trimmed) return null;
+      let value = 0;
+      const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for (let i = 0; i < trimmed.length; i++) {
+        const idx = digits.indexOf(trimmed[i]);
+        if (idx < 0 || idx >= base) return null;
+        value = value * base + idx;
+      }
+      return value;
+    }
+
+    function showError(message) {
+      resultEl.classList.add('visible', 'error');
+      resultContent.innerHTML = '<p class="error-msg">' + escapeHtml(message) + '</p>';
+    }
+
+    function formatInBase(n, base) {
+      if (n < 0) return '−' + toBase(-n, base);
+      return toBase(n, base);
+    }
+
+    function showResult(contentHtml) {
+      resultEl.classList.remove('error');
+      resultEl.classList.add('visible');
+      resultContent.innerHTML = contentHtml;
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const base = parseInt(form.base.value, 10);
+      const op = form.op.value;
+      const num1Str = form.num1.value.trim();
+      const num2Str = form.num2.value.trim();
+
+      if (isNaN(base) || base < 2 || base > 36) {
+        showError('Base must be between 2 and 36.');
+        return;
+      }
+
+      const num1 = parseInBase(num1Str, base);
+      const num2 = parseInBase(num2Str, base);
+
+      if (num1 === null) {
+        showError('Invalid number 1 for base ' + base + '.');
+        return;
+      }
+      if (num2 === null) {
+        showError('Invalid number 2 for base ' + base + '.');
+        return;
+      }
+      if (op === '/' && num2 === 0) {
+        showError('Division by zero is not allowed.');
+        return;
+      }
+
+      let html = '';
+      if (op === '/') {
+        const quotient = Math.floor(num1 / num2);
+        const remainder = num1 % num2;
+        html = ''
+          + '<div class="result-row"><span class="result-label">Quotient</span><span class="result-value">' + escapeHtml(formatInBase(quotient, base)) + '</span></div>'
+          + '<div class="result-row"><span class="result-label">Remainder</span><span class="result-value">' + escapeHtml(formatInBase(remainder, base)) + '</span></div>';
+      } else {
+        let result;
+        if (op === '+') result = num1 + num2;
+        else if (op === '-') result = num1 - num2;
+        else result = num1 * num2;
+        html = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(formatInBase(result, base)) + '</span></div>';
+      }
+      showResult(html);
+    });
+  </script>
+</body>
+</html>
