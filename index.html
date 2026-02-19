@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Base Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg: #0f0f0f;
@@ -237,8 +240,41 @@
       color: var(--error);
       font-size: 0.95rem;
     }
+
+    .steps {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: inherit;
+    }
+
+    .steps h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 0.75rem;
+    }
+
+    .step-line {
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+
+    .step-highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .step-line sup {
+      font-size: 0.65em;
+    }
   </style>
 </head>
+
 <body>
   <main>
     <h1>Base Calculator</h1>
@@ -250,38 +286,38 @@
     </div>
 
     <div id="panel-calc" class="panel active" role="tabpanel">
-    <form id="form" autocomplete="off">
-      <div class="form-group">
-        <label for="base">Base</label>
-        <input type="number" id="base" name="base" min="2" max="36" value="10" placeholder="e.g. 10" required>
-      </div>
-      <div class="form-group">
-        <label>Operation</label>
-        <div class="ops">
-          <label class="op"><input type="radio" name="op" value="+" checked> Plus</label>
-          <label class="op"><input type="radio" name="op" value="-"> Minus</label>
-          <label class="op"><input type="radio" name="op" value="*"> Multiply</label>
-          <label class="op"><input type="radio" name="op" value="/"> Divide</label>
-          <label class="op"><input type="radio" name="op" value="**"> Power</label>
-        </div>
-      </div>
-      <div class="row">
+      <form id="form" autocomplete="off">
         <div class="form-group">
-          <label for="num1">Number 1</label>
-          <input type="text" id="num1" name="num1" placeholder="e.g. 17" required>
+          <label for="base">Base</label>
+          <input type="number" id="base" name="base" min="2" max="36" value="10" placeholder="e.g. 10" required>
         </div>
         <div class="form-group">
-          <label for="num2">Number 2</label>
-          <input type="text" id="num2" name="num2" placeholder="e.g. 5" required>
+          <label>Operation</label>
+          <div class="ops">
+            <label class="op"><input type="radio" name="op" value="+" checked> Plus</label>
+            <label class="op"><input type="radio" name="op" value="-"> Minus</label>
+            <label class="op"><input type="radio" name="op" value="*"> Multiply</label>
+            <label class="op"><input type="radio" name="op" value="/"> Divide</label>
+            <label class="op"><input type="radio" name="op" value="**"> Power</label>
+          </div>
         </div>
-      </div>
-      <button type="submit">Calculate</button>
-    </form>
+        <div class="row">
+          <div class="form-group">
+            <label for="num1">Number 1</label>
+            <input type="text" id="num1" name="num1" placeholder="e.g. 17" required>
+          </div>
+          <div class="form-group">
+            <label for="num2">Number 2</label>
+            <input type="text" id="num2" name="num2" placeholder="e.g. 5" required>
+          </div>
+        </div>
+        <button type="submit">Calculate</button>
+      </form>
 
-    <div id="result" class="result" role="status" aria-live="polite">
-      <h2>Result</h2>
-      <div id="result-content"></div>
-    </div>
+      <div id="result" class="result" role="status" aria-live="polite">
+        <h2>Result</h2>
+        <div id="result-content"></div>
+      </div>
     </div>
 
     <div id="panel-convert" class="panel" role="tabpanel">
@@ -289,7 +325,8 @@
         <div class="row">
           <div class="form-group">
             <label for="fromBase">From base</label>
-            <input type="number" id="fromBase" name="fromBase" min="2" max="36" value="10" placeholder="e.g. 10" required>
+            <input type="number" id="fromBase" name="fromBase" min="2" max="36" value="10" placeholder="e.g. 10"
+              required>
           </div>
           <div class="form-group">
             <label for="toBase">To base</label>
@@ -365,10 +402,68 @@
       return toBase(n, base);
     }
 
-    function showResult(contentHtml) {
+    function showResult(contentHtml, stepsHtml) {
       resultEl.classList.remove('error');
       resultEl.classList.add('visible');
+      if (stepsHtml) {
+        contentHtml += '<div class="steps"><h3>How it works</h3>' + stepsHtml + '</div>';
+      }
       resultContent.innerHTML = contentHtml;
+    }
+
+    function generateParseSteps(str, base, label) {
+      label = label ? label + ' ' : '';
+      if (str === '0') return '<div class="step-line">' + escapeHtml(label) + '(0 in base ' + base + ' is 0 in decimal).</div>';
+      const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let html = '<div class="step-line">Convert ' + escapeHtml(label) + '<span style="font-family: \'JetBrains Mono\', monospace;">' + escapeHtml(str) + '</span> (base ' + base + ') to decimal:</div>';
+      let sumParts = [];
+      let calcParts = [];
+      let total = 0;
+      let len = str.length;
+      for (let i = 0; i < len; i++) {
+        const char = str[i].toUpperCase();
+        const val = digits.indexOf(char);
+        const power = len - 1 - i;
+        const partVal = val * Math.pow(base, power);
+        total += partVal;
+
+        sumParts.push(char + '×' + base + '<sup>' + power + '</sup>');
+        calcParts.push(val + '×' + Math.pow(base, power));
+      }
+      html += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;= ' + sumParts.join(' + ') + '</div>';
+      if (str.length > 1) {
+        let hasAlpha = false;
+        for (let i = 0; i < len; i++) {
+          if (digits.indexOf(str[i].toUpperCase()) > 9) {
+            hasAlpha = true;
+            break;
+          }
+        }
+        if (hasAlpha) {
+          html += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;= ' + calcParts.join(' + ') + '</div>';
+        }
+      }
+      html += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;= <span class="step-highlight">' + total + '</span></div>';
+      return html;
+    }
+
+    function generateToBaseSteps(n, base, label) {
+      label = label || 'value';
+      if (n === 0) return '<div class="step-line">Convert ' + escapeHtml(label) + ' (0) to base ' + base + ': <span class="step-highlight">0</span></div>';
+      const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let html = '<div class="step-line">Convert ' + escapeHtml(label) + ' (' + n + ') to base ' + base + ' by successive division:</div>';
+      let curr = n;
+      const remaindersChars = [];
+      while (curr > 0) {
+        const q = Math.floor(curr / base);
+        const r = curr % base;
+        const char = digits[r];
+        remaindersChars.push(char);
+        html += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;' + curr + ' ÷ ' + base + ' = ' + q + ' R ' + r + (r > 9 ? ' &rarr; ' + char : '') + '</div>';
+        curr = q;
+      }
+      html += '<div class="step-line">Read remainders from bottom to top: <span class="step-highlight" style="font-family: \'JetBrains Mono\', monospace;">' + remaindersChars.reverse().join('') + '</span></div>';
+      return html;
     }
 
     function escapeHtml(s) {
@@ -410,6 +505,16 @@
         return;
       }
 
+      let stepsHtml = '';
+      if (base !== 10) {
+        stepsHtml += generateParseSteps(num1Str, base, 'Number 1');
+        stepsHtml += '<br>';
+        stepsHtml += generateParseSteps(num2Str, base, 'Number 2');
+        stepsHtml += '<br>';
+      }
+
+      const opSymbol = op === '**' ? '^' : op;
+
       let html = '';
       if (op === '/') {
         const quotient = Math.floor(num1 / num2);
@@ -417,6 +522,16 @@
         html = ''
           + '<div class="result-row"><span class="result-label">Quotient</span><span class="result-value">' + escapeHtml(formatInBase(quotient, base)) + '</span></div>'
           + '<div class="result-row"><span class="result-label">Remainder</span><span class="result-value">' + escapeHtml(formatInBase(remainder, base)) + '</span></div>';
+
+        stepsHtml += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">Decimal operation: ' + num1 + ' ÷ ' + num2 + '</div>';
+        stepsHtml += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;Quotient = ' + quotient + '</div>';
+        stepsHtml += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">&nbsp;&nbsp;Remainder = ' + remainder + '</div>';
+        if (base !== 10) {
+          stepsHtml += '<br>';
+          stepsHtml += generateToBaseSteps(Math.abs(quotient), base, 'Quotient');
+          stepsHtml += '<br>';
+          stepsHtml += generateToBaseSteps(Math.abs(remainder), base, 'Remainder');
+        }
       } else {
         let result;
         if (op === '+') result = num1 + num2;
@@ -428,8 +543,14 @@
           return;
         }
         html = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(formatInBase(result, base)) + '</span></div>';
+
+        stepsHtml += '<div class="step-line" style="font-family: \'JetBrains Mono\', monospace;">Decimal operation: ' + num1 + ' ' + escapeHtml(opSymbol) + ' ' + num2 + ' = <span class="step-highlight">' + result + '</span></div>';
+        if (base !== 10) {
+          stepsHtml += '<br>';
+          stepsHtml += generateToBaseSteps(Math.abs(result), base, 'Result');
+        }
       }
-      showResult(html);
+      showResult(html, stepsHtml);
     });
 
     // Base converter
@@ -438,10 +559,14 @@
       resultConvertContent.innerHTML = '<p class="error-msg">' + escapeHtml(message) + '</p>';
     }
 
-    function showConvertResult(valueStr, toBase) {
+    function showConvertResult(valueStr, toBase, stepsHtml) {
       resultConvertEl.classList.remove('error');
       resultConvertEl.classList.add('visible');
-      resultConvertContent.innerHTML = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(valueStr) + '</span></div>';
+      let html = '<div class="result-row"><span class="result-label">Result</span><span class="result-value">' + escapeHtml(valueStr) + '</span></div>';
+      if (stepsHtml) {
+        html += '<div class="steps"><h3>How it works</h3>' + stepsHtml + '</div>';
+      }
+      resultConvertContent.innerHTML = html;
     }
 
     formConvert.addEventListener('submit', function (e) {
@@ -468,9 +593,22 @@
       }
       if (negative) num = -num;
 
+      let stepsHtml = '';
+      if (fromBase !== 10) {
+        stepsHtml += generateParseSteps(numStr, fromBase);
+      }
+      if (toBase !== 10) {
+        if (stepsHtml) stepsHtml += '<br>';
+        stepsHtml += generateToBaseSteps(Math.abs(num), toBase);
+      }
+      if (!stepsHtml && fromBase === 10 && toBase === 10) {
+        stepsHtml = '<div class="step-line">Both bases are 10, so the number remains unchanged.</div>';
+      }
+
       var resultStr = formatInBase(num, toBase);
-      showConvertResult(resultStr, toBase);
+      showConvertResult(resultStr, toBase, stepsHtml);
     });
   </script>
 </body>
+
 </html>
